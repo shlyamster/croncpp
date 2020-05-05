@@ -1,27 +1,24 @@
-cmake_minimum_required(VERSION 3.7.0)
-project(croncpp)
+cmake_minimum_required(VERSION 3.7)
+project(croncpp VERSION 1.0.0 LANGUAGES CXX DESCRIPTION "Header-only cross-platform library for handling CRON expressions")
+set(CMAKE_CXX_STANDARD 17)
 
-if(WIN32)
-   message(status "Setting MSVC flags")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHc /std:c++latest")
-   add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-elseif(APPLE)
-   message(status "Setting Clang flags")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fexceptions -g -Wall")
-else()
-   message(status "Setting GCC flags")
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fexceptions -g -Wall")
-   # enable profiling
-   if(ENABLE_PROFILING)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -g -O0 -fprofile-arcs -ftest-coverage") 
-   endif()
-endif()
+include(GNUInstallDirs)
 
-message(status "** CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+set(SOURCE_HEADERS
+    include/croncpp.hpp
+)
 
-if(BUILD_TESTS)
-    include(CTest)
-endif()
+add_library(${PROJECT_NAME} INTERFACE)
+target_include_directories(${PROJECT_NAME} INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
-add_subdirectory(benchmark)
-add_subdirectory(test)
+install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}Targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+)
+install(FILES ${SOURCE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
